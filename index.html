@@ -741,3 +741,69 @@ I updated the court conditions.
             };
             
             // 2. Build URL
+            const queryString = new URLSearchParams(p).toString();
+            const shareUrl = window.location.origin + window.location.pathname + '?' + queryString;
+
+            // 3. Build Text
+            const t = dict[currentLang];
+            const msg = t.wa_msg.replace('{link}', shareUrl);
+
+            // 4. Copy
+            navigator.clipboard.writeText(msg).then(() => {
+                const alertMsg = {
+                    es: "¡Enlace copiado! Pégalo en WhatsApp.",
+                    ca: "Enllaç copiat! Enganxa-ho al WhatsApp.",
+                    en: "Link copied! Paste into WhatsApp."
+                };
+                alert(alertMsg[currentLang]);
+            });
+        }
+
+        function rainTennisBalls() {
+            for (let i = 0; i < 30; i++) {
+                setTimeout(() => {
+                    let b = document.createElement('div');
+                    b.className = 'falling-ball';
+                    b.innerText = '🎾';
+                    b.style.left = Math.random() * 100 + "vw";
+                    b.style.animationDuration = (Math.random() * 2 + 1) + "s";
+                    document.body.appendChild(b);
+                    setTimeout(() => b.remove(), 3000);
+                }, i * 100);
+            }
+        }
+
+        // Modal Functions
+        function openAdModal() { document.getElementById("adModal").style.display = "block"; }
+        function closeAdModal() { document.getElementById("adModal").style.display = "none"; }
+        function openMathModal() { document.getElementById("mathModal").style.display = "block"; }
+        function closeMathModal() { document.getElementById("mathModal").style.display = "none"; }
+
+        window.onclick = function(event) {
+            if (event.target == document.getElementById("adModal")) closeAdModal();
+            if (event.target == document.getElementById("mathModal")) closeMathModal();
+        }
+
+        // AUTO-LOAD PARAMS
+        window.onload = function() {
+            const params = new URLSearchParams(window.location.search);
+            
+            // Restore Values if Present
+            if(params.has('puddle')) document.getElementById('puddleFactor').value = params.get('puddle');
+            if(params.has('rain')) document.getElementById('rain').value = params.get('rain');
+            if(params.has('sun')) document.getElementById('sun').value = params.get('sun');
+            if(params.has('temp')) document.getElementById('temp').value = params.get('temp');
+            if(params.has('wind')) document.getElementById('wind').value = params.get('wind');
+            if(params.has('speed')) document.getElementById('speed').value = params.get('speed');
+            
+            // Set Language last (triggers UI updates)
+            let lang = params.get('lang') || 'es';
+            setLang(lang);
+            
+            // Update labels manually once just in case
+            updateUI();
+            initPuddles();
+        };
+    </script>
+</body>
+</html>
