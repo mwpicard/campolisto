@@ -54,10 +54,6 @@
             justify-content: center;
             z-index: 100;
         }
-        .info-btn:hover {
-            background: white;
-            color: #000;
-        }
 
         /* Language Buttons */
         .lang-container {
@@ -157,6 +153,7 @@
             opacity: 1;
         }
 
+        /* Main Controls Box */
         .controls {
             background: rgba(255, 255, 255, 0.9);
             padding: 20px;
@@ -171,34 +168,62 @@
         label { display: block; font-weight: bold; font-size: 0.9em; margin-bottom: 5px; }
         input[type="number"], input[type="range"] { width: 100%; box-sizing: border-box; }
         
-        button {
+        /* New Range Labels */
+        .range-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8em;
+            color: #666;
+            margin-top: -3px;
+        }
+
+        /* Start Button (Now outside box) */
+        .start-btn {
             background-color: #25D366;
             color: white;
             border: none;
             padding: 14px;
             width: 100%;
-            border-radius: 8px;
-            font-size: 16px;
+            max-width: 360px; /* Slightly wider than controls */
+            border-radius: 12px;
+            font-size: 18px;
             font-weight: bold;
             cursor: pointer;
-            margin-top: 5px; 
-            transition: background 0.2s, transform 0.1s;
+            margin-bottom: 15px; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            transition: transform 0.1s, background 0.2s;
         }
-        button:hover { background-color: #128C7E; transform: translateY(-1px); }
-        button:disabled { background-color: #ccc; transform: none; }
+        .start-btn:hover { background-color: #128C7E; transform: translateY(-1px); }
+        .start-btn:disabled { background-color: #ccc; transform: none; }
 
         .share-btn {
             background-color: #34B7F1;
             display: none;
             margin-top: 15px;
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
         }
-        .share-btn:hover { background-color: #2da0d1; }
+
+        /* Sponsored Label */
+        .sponsored-text {
+            font-size: 0.75em;
+            color: #666;
+            margin-top: 25px;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-shadow: 1px 1px 2px rgba(255,255,255,0.8);
+        }
 
         /* Ad Banner Styles */
         .ad-banner {
             width: 100%;
             max-width: 340px; 
-            margin-top: 25px;
             display: flex;
             justify-content: space-between;
             gap: 8px;
@@ -240,12 +265,6 @@
              font-size: 0.9em;
              line-height: 1.1;
         }
-        .ad-slot:hover {
-            background: rgba(255, 255, 255, 1);
-            border-color: #888;
-            transform: translateY(-2px);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
 
         /* MODAL STYLES */
         .modal {
@@ -282,7 +301,6 @@
             right: 15px;
             cursor: pointer;
         }
-        .close:hover { color: black; }
         .email-btn-modal {
             display: inline-block;
             background-color: #075e54;
@@ -304,9 +322,7 @@
             color: #333;
             border: 1px solid #ccc;
         }
-
-        @keyframes fadeIn { from {opacity: 0;} to {opacity: 1;} }
-
+        
         .falling-ball {
             position: fixed;
             z-index: 1000;
@@ -316,6 +332,7 @@
             pointer-events: none;
         }
         @keyframes fall { to { transform: translateY(110vh) rotate(360deg); } }
+        @keyframes fadeIn { from {opacity: 0;} to {opacity: 1;} }
     </style>
 </head>
 <body>
@@ -341,8 +358,18 @@
     <div class="playability-display" id="percentDisplay">0%</div>
     <div class="status-text" id="status">...</div>
 
+    <button onclick="startSimulation()" class="start-btn" id="simBtn">¿Cuándo Estarán Listas?</button>
+
     <div class="controls">
-        <button onclick="startSimulation()" id="simBtn" style="margin-bottom: 20px;">¿Cuándo Estarán Listas?</button>
+        
+        <div class="input-group">
+            <label id="lblPuddle">Charcos ahora:</label>
+            <input type="range" id="puddleFactor" min="0.5" max="1.5" step="0.1" value="1.0" oninput="initPuddles()">
+            <div class="range-labels">
+                <span id="lblFew">Pocos</span>
+                <span id="lblTotal">Total</span>
+            </div>
+        </div>
 
         <div class="input-group">
             <label id="lblRain">Lluvia (mm)</label>
@@ -365,17 +392,17 @@
         <button onclick="copyToWhatsapp()" class="share-btn" id="shareBtn">WhatsApp</button>
     </div>
 
+    <div class="sponsored-text" id="sponsoredTxt">---- Patrocinado ----</div>
+
     <div class="ad-banner">
         <a href="https://guidal.org" target="_blank" class="ad-slot active-ad">
             <img src="images/w&d.png" alt="Logo">
             <span>Alella Green Tech</span>
         </a>
-        
         <a href="https://clubalellasistres.cat/" target="_blank" class="ad-slot active-ad">
             <img src="images/sistres_ad.png" alt="Setpoint">
             <span>Setpoint Tennis</span>
         </a>
-        
         <div class="ad-slot" onclick="openAdModal()">
             clica aquí para poner tu publicidad
         </div>
@@ -396,16 +423,13 @@
             <span class="close" onclick="closeMathModal()">&times;</span>
             <h3 id="mathTitle">Cálculo de Secado</h3>
             <p id="mathDesc">Estimación basada en evaporación y drenaje para arcilla roja:</p>
-            
             <div class="math-box">
                 R = 0.3 * (T/10) * (1 + W/20)
             </div>
-            
             <p style="font-size:0.9em; text-align:left; color:#555;">
                 <b>R:</b> Rate (mm/h)<br>
                 <b>T:</b> Temp (°C)<br>
-                <b>W:</b> Wind (km/h)<br>
-                <b>0.3:</b> Coeficiente Arcilla (Clay)
+                <b>W:</b> Wind (km/h)
             </p>
         </div>
     </div>
@@ -423,6 +447,10 @@
                 wind: "Viento",
                 speed: "Velocidad",
                 sec: "s",
+                puddles: "Charcos ahora:",
+                few: "Pocos",
+                total: "Total",
+                sponsored: "---- Patrocinado ----",
                 btn_share: "📋 Copiar para WhatsApp",
                 wa_msg: `🎾 *Estado Pistas Tennis*
 🌧️ Lluvia: {rain}mm
@@ -445,6 +473,10 @@
                 wind: "Vent",
                 speed: "Velocitat",
                 sec: "s",
+                puddles: "Tolls ara:",
+                few: "Pocs",
+                total: "Total",
+                sponsored: "---- Patrocinat ----",
                 btn_share: "📋 Copiar per WhatsApp",
                 wa_msg: `🎾 *Estat Pistes Tennis*
 🌧️ Pluja: {rain}mm
@@ -467,6 +499,10 @@
                 wind: "Wind",
                 speed: "Sim Speed",
                 sec: "s",
+                puddles: "Puddles now:",
+                few: "Few",
+                total: "Flooded",
+                sponsored: "---- Sponsored ----",
                 btn_share: "📋 Copy for WhatsApp",
                 wa_msg: `🎾 *Tennis Court Status*
 🌧️ Rain: {rain}mm
@@ -501,10 +537,15 @@
             document.getElementById('simBtn').innerText = t.btn_sim;
             document.getElementById('shareBtn').innerText = t.btn_share;
             
+            // New UI Elements
+            document.getElementById('lblPuddle').innerText = t.puddles;
+            document.getElementById('lblFew').innerText = t.few;
+            document.getElementById('lblTotal').innerText = t.total;
+            document.getElementById('sponsoredTxt').innerText = t.sponsored;
+            
             document.getElementById('mathTitle').innerText = t.math_title;
             document.getElementById('mathDesc').innerText = t.math_desc;
 
-            // Only update if idle
             if(document.getElementById('simBtn').disabled === false && document.getElementById('shareBtn').style.display === 'none') {
                  const now = new Date();
                  document.getElementById('status').innerText = t.not_ready + formatClock(now);
@@ -523,13 +564,17 @@
 
         function initPuddles() {
             const rainInput = document.getElementById('rain').value;
-            const amount = parseFloat(rainInput) || 0;
+            // Get Puddle Factor (0.5 to 1.5)
+            const factor = parseFloat(document.getElementById('puddleFactor').value);
+            
+            // Visual amount uses factor
+            const amount = (parseFloat(rainInput) || 0) * factor;
+            
             createPuddles(amount);
             document.getElementById('percentDisplay').innerText = "0%";
             document.getElementById('percentDisplay').style.color = "#333";
             document.getElementById('successMsg').classList.remove('show');
             const now = new Date();
-            // Show "No están listas..." initially
             document.getElementById('status').innerText = dict[currentLang].not_ready + formatClock(now);
         }
 
@@ -538,7 +583,8 @@
             puddles = [];
             const court = document.getElementById('court');
             if (amount <= 0) return;
-            const numPuddles = Math.min(Math.ceil(amount * 2.5), 20); 
+            // More puddles if amount is higher
+            const numPuddles = Math.min(Math.ceil(amount * 2.5), 25); 
             for(let i=0; i<numPuddles; i++) {
                 let p = document.createElement('div');
                 p.className = 'puddle';
@@ -569,7 +615,8 @@
         }
 
         function startSimulation() {
-            const rain = parseFloat(document.getElementById('rain').value) || 0;
+            const rainBase = parseFloat(document.getElementById('rain').value) || 0;
+            const factor = parseFloat(document.getElementById('puddleFactor').value);
             const temp = parseFloat(document.getElementById('temp').value);
             const wind = parseFloat(document.getElementById('wind').value);
 
@@ -586,15 +633,17 @@
             percentEl.style.color = "#333";
             let celebrated = false;
 
+            // Update Puddles one last time before start
             initPuddles();
 
+            // Calculate ACTUAL water using the factor
+            let currentWater = rainBase * factor;
+            let maxWater = Math.max(currentWater, 1); 
+
             let evapRate = (0.2 * (temp / 10) * (1 + (wind / 20))) * 1.5;
-            let currentWater = rain;
-            let maxWater = Math.max(rain, 1); 
             let hoursPassed = 0;
             const startTime = new Date();
             
-            // Switch to "Listas a las..." as soon as simulation starts
             statusEl.innerText = dict[currentLang].ready_status + formatClock(startTime);
 
             const tickRate = 0.05; 
@@ -607,8 +656,6 @@
                 hoursPassed += hoursPerTick;
 
                 const simulatedDate = new Date(startTime.getTime() + (hoursPassed * 60 * 60 * 1000));
-                
-                // Keep updating prediction time
                 statusEl.innerText = dict[currentLang].ready_status + formatClock(simulatedDate);
 
                 if (currentWater < 0) currentWater = 0;
