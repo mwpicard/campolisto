@@ -35,13 +35,12 @@
             overflow: hidden;
         }
         
-        /* Tennis Lines */
         .line { position: absolute; background: white; }
         .net { position: absolute; width: 4px; height: 100%; background: #ddd; left: 50%; transform: translateX(-50%); border-left: 1px dashed #333; z-index: 2; }
         .service-box { position: absolute; width: 70%; height: 60%; border: 2px solid white; top: 20%; left: 15%; z-index: 1; }
         .center-line { position: absolute; width: 100%; height: 2px; background: white; top: 50%; left: 0; z-index: 1; }
 
-        /* Puddles (Charcos) */
+        /* Puddles */
         .puddle {
             position: absolute;
             background: rgba(0, 100, 255, 0.7);
@@ -63,10 +62,11 @@
             color: #555;
             margin-bottom: 20px;
             font-weight: bold;
-            font-size: 1.3em; /* Made slightly larger */
+            font-size: 1.4em; /* Larger text */
             min-height: 1.2em;
             text-align: center;
-            font-variant-numeric: tabular-nums; /* Prevents jittering numbers */
+            /* Monospace ensures the numbers don't wiggle while scrolling */
+            font-family: "Courier New", Courier, monospace; 
         }
 
         /* Success Message */
@@ -128,7 +128,6 @@
             display: none;
         }
 
-        /* Tennis Ball Rain */
         .falling-ball {
             position: fixed;
             z-index: 1000;
@@ -149,7 +148,6 @@
         <div class="line" style="width: 100%; height: 2px; bottom: 10%;"></div>
         <div class="service-box"><div class="center-line"></div></div>
         <div class="net"></div>
-        
         <div class="success-overlay" id="successMsg">¡CAMPO LISTO!</div>
     </div>
 
@@ -236,128 +234,5 @@
             });
         }
 
-        function startSimulation() {
-            // Inputs
-            const rain = parseFloat(document.getElementById('rain').value) || 0;
-            const temp = parseFloat(document.getElementById('temp').value);
-            const wind = parseFloat(document.getElementById('wind').value);
-
-            // Elements
-            const percentEl = document.getElementById('percentDisplay');
-            const statusEl = document.getElementById('status');
-            const btn = document.getElementById('simBtn');
-            const shareBtn = document.getElementById('shareBtn');
-            const successMsg = document.getElementById('successMsg');
-
-            if (simInterval) clearInterval(simInterval);
-            shareBtn.style.display = 'none';
-            successMsg.classList.remove('show');
-            btn.disabled = true;
-            percentEl.style.color = "#333";
-            let celebrated = false;
-
-            initPuddles();
-
-            // Evaporation Rate
-            let evapRate = (0.2 * (temp / 10) * (1 + (wind / 20))) * 1.5;
-            
-            let currentWater = rain;
-            let maxWater = Math.max(rain, 1); 
-            let hoursPassed = 0;
-            
-            // Track start time for the running clock
-            const startTime = new Date();
-
-            // Ticker setup (0.05s = 50ms)
-            const tickRate = 0.05; 
-
-            simInterval = setInterval(() => {
-                const currentSpeedVal = parseFloat(document.getElementById('speed').value);
-                const hoursPerTick = tickRate / currentSpeedVal;
-
-                currentWater -= (evapRate * hoursPerTick);
-                hoursPassed += hoursPerTick;
-
-                // --- CLOCK UPDATE START ---
-                // Calculate current simulated time
-                const simulatedDate = new Date(startTime.getTime() + (hoursPassed * 60 * 60 * 1000));
-                const hStr = simulatedDate.getHours().toString().padStart(2, '0');
-                const mStr = simulatedDate.getMinutes().toString().padStart(2, '0');
-                
-                // Show running time
-                statusEl.innerText = `Listas a las: ${hStr}:${mStr}`;
-                // --- CLOCK UPDATE END ---
-
-                if (currentWater < 0) currentWater = 0;
-
-                // Update %
-                let percent = 0;
-                if (maxWater > 0) percent = 100 - ((currentWater / maxWater) * 100);
-                else percent = 100;
-                
-                if (percent > 100) percent = 100;
-                if (percent < 0) percent = 0;
-
-                percentEl.innerText = Math.floor(percent) + "%";
-                updatePuddles(currentWater / maxWater);
-
-                if (percent >= 95 && !celebrated) {
-                    celebrated = true;
-                    rainTennisBalls();
-                }
-
-                if (currentWater <= 0) {
-                    clearInterval(simInterval);
-                    finish(hoursPassed); // Pass final hours to ensure exact match
-                }
-
-            }, tickRate * 1000);
-        }
-
-        function finish(hours) {
-            document.getElementById('simBtn').disabled = false;
-            const percentEl = document.getElementById('percentDisplay');
-            percentEl.style.color = "#25D366";
-            percentEl.innerText = "100%";
-            
-            document.getElementById('successMsg').classList.add('show');
-            
-            // Recalculate final time one last time to be precise
-            const now = new Date();
-            const playTime = new Date(now.getTime() + (hours * 60 * 60 * 1000));
-            
-            const hoursStr = playTime.getHours().toString().padStart(2, '0');
-            const minsStr = playTime.getMinutes().toString().padStart(2, '0');
-            const readyTime = `${hoursStr}:${minsStr}`;
-            
-            // Freeze the text
-            document.getElementById('status').innerText = `Listas a las: ${readyTime}`;
-            
-            lastResult = `🎾 *Pistas Sistres*\n🌧️ Lluvia: ${document.getElementById('rain').value}mm\n🌡️ Temp: ${document.getElementById('temp').value}°C\n\n✅ *¡CAMPO LISTO!*\n⏰ Hora estimada: ${readyTime}\n\n¡Vamos a jugar!`;
-            
-            document.getElementById('shareBtn').style.display = 'block';
-        }
-
-        function copyToWhatsapp() {
-            navigator.clipboard.writeText(lastResult);
-            alert("¡Copiado! Pégalo en WhatsApp.");
-        }
-
-        function rainTennisBalls() {
-            for (let i = 0; i < 30; i++) {
-                setTimeout(() => {
-                    let b = document.createElement('div');
-                    b.className = 'falling-ball';
-                    b.innerText = '🎾';
-                    b.style.left = Math.random() * 100 + "vw";
-                    b.style.animationDuration = (Math.random() * 2 + 1) + "s";
-                    document.body.appendChild(b);
-                    setTimeout(() => b.remove(), 3000);
-                }, i * 100);
-            }
-        }
-
-        window.onload = initPuddles;
-    </script>
-</body>
-</html>
+        // Helper to format time nicely
+        function formatClock(dateObj) {
