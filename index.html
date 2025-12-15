@@ -34,6 +34,31 @@
             z-index: -1;
         }
 
+        /* INFO BUTTON (?) */
+        .info-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 30px;
+            height: 30px;
+            background: rgba(255,255,255,0.8);
+            border-radius: 50%;
+            border: 1px solid #999;
+            color: #555;
+            font-weight: bold;
+            font-family: serif;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+        .info-btn:hover {
+            background: white;
+            color: #000;
+        }
+
         /* Language Buttons */
         .lang-container {
             margin-bottom: 15px;
@@ -172,7 +197,7 @@
         /* Ad Banner Styles */
         .ad-banner {
             width: 100%;
-            max-width: 340px; /* Widened slightly to fit 3 items better */
+            max-width: 340px; 
             margin-top: 25px;
             display: flex;
             justify-content: space-between;
@@ -195,10 +220,9 @@
             justify-content: center;
             text-decoration: none;
             cursor: pointer;
-            min-height: 80px; /* Ensure they have height */
+            min-height: 80px; 
         }
         
-        /* Active Ad Style */
         .ad-slot.active-ad {
             background: rgba(255, 255, 255, 0.9);
             border: 1px solid #4CAF50; 
@@ -269,6 +293,18 @@
             font-weight: bold;
             margin-top: 15px;
         }
+        
+        .math-box {
+            background: #f0f2f5;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-family: monospace;
+            font-size: 0.9em;
+            color: #333;
+            border: 1px solid #ccc;
+        }
+
         @keyframes fadeIn { from {opacity: 0;} to {opacity: 1;} }
 
         .falling-ball {
@@ -283,6 +319,8 @@
     </style>
 </head>
 <body>
+
+    <button class="info-btn" onclick="openMathModal()">?</button>
 
     <div class="lang-container">
         <button class="lang-btn active" onclick="setLang('es')" id="btnES">ES</button>
@@ -333,23 +371,42 @@
             <span>Alella Green Tech</span>
         </a>
         
-        <a href="https://www.instagram.com/setpoint.tn/" target="_blank" class="ad-slot active-ad">
+        <a href="https://clubalellasistres.cat/" target="_blank" class="ad-slot active-ad">
             <img src="images/sistres_ad.png" alt="Setpoint">
             <span>Setpoint Tennis</span>
         </a>
         
-        <div class="ad-slot" onclick="openModal()">
+        <div class="ad-slot" onclick="openAdModal()">
             clica aquí para poner tu publicidad
         </div>
     </div>
 
     <div id="adModal" class="modal">
         <div class="modal-content">
-            <span class="close" onclick="closeModal()">&times;</span>
+            <span class="close" onclick="closeAdModal()">&times;</span>
             <h3>¿Quieres anunciarte?</h3>
             <p style="margin-bottom: 5px;">Ponte en contacto:</p>
             <a href="mailto:info@alellagreentech.org" class="email-btn-modal">Enviar Email</a>
             <p style="font-size:0.8em; color:#666; margin-top:15px;">info@alellagreentech.org</p>
+        </div>
+    </div>
+
+    <div id="mathModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeMathModal()">&times;</span>
+            <h3 id="mathTitle">Cálculo de Secado</h3>
+            <p id="mathDesc">Estimación basada en evaporación y drenaje para arcilla roja:</p>
+            
+            <div class="math-box">
+                R = 0.3 * (T/10) * (1 + W/20)
+            </div>
+            
+            <p style="font-size:0.9em; text-align:left; color:#555;">
+                <b>R:</b> Rate (mm/h)<br>
+                <b>T:</b> Temp (°C)<br>
+                <b>W:</b> Wind (km/h)<br>
+                <b>0.3:</b> Coeficiente Arcilla (Clay)
+            </p>
         </div>
     </div>
 
@@ -359,6 +416,7 @@
                 title: "¿Cuándo Estarán Listas Las Pistas de Tennis?",
                 success: "¡PISTAS LISTAS!",
                 ready_status: "Listas a las: ",
+                not_ready: "No están Listas... ",
                 btn_sim: "¿Cuándo Estarán Listas?",
                 rain: "Lluvia (mm)",
                 temp: "Temperatura",
@@ -372,12 +430,15 @@
 
 ✅ *¡PISTAS LISTAS!*
 ⏰ Hora estimada: {time}
-🔗 {link}`
+🔗 {link}`,
+                math_title: "Cálculo de Secado",
+                math_desc: "Estimación basada en evaporación y drenaje para arcilla roja:"
             },
             ca: {
                 title: "Quan estaran llestes les pistes de Tennis?",
                 success: "PISTES LLESTES!",
                 ready_status: "Llestes a les: ",
+                not_ready: "No estan Llestes... ",
                 btn_sim: "Quan estaran llestes?",
                 rain: "Pluja (mm)",
                 temp: "Temperatura",
@@ -391,12 +452,15 @@
 
 ✅ *PISTES LLESTES!*
 ⏰ Hora estimada: {time}
-🔗 {link}`
+🔗 {link}`,
+                math_title: "Càlcul d'Assecat",
+                math_desc: "Estimació basada en evaporació i drenatge per a terra batuda:"
             },
             en: {
                 title: "When will the Tennis Courts be ready?",
                 success: "COURTS READY!",
                 ready_status: "Ready at: ",
+                not_ready: "Not Ready Yet... ",
                 btn_sim: "When will they be ready?",
                 rain: "Rainfall (mm)",
                 temp: "Temperature",
@@ -410,7 +474,9 @@
 
 ✅ *COURTS READY!*
 ⏰ Est. Time: {time}
-🔗 {link}`
+🔗 {link}`,
+                math_title: "Drying Calculation",
+                math_desc: "Estimate based on evaporation and drainage for red clay:"
             }
         };
 
@@ -434,10 +500,14 @@
             document.getElementById('lblSec').innerText = t.sec;
             document.getElementById('simBtn').innerText = t.btn_sim;
             document.getElementById('shareBtn').innerText = t.btn_share;
+            
+            document.getElementById('mathTitle').innerText = t.math_title;
+            document.getElementById('mathDesc').innerText = t.math_desc;
 
+            // Only update if idle
             if(document.getElementById('simBtn').disabled === false && document.getElementById('shareBtn').style.display === 'none') {
                  const now = new Date();
-                 document.getElementById('status').innerText = t.ready_status + formatClock(now);
+                 document.getElementById('status').innerText = t.not_ready + formatClock(now);
             }
         }
 
@@ -459,7 +529,8 @@
             document.getElementById('percentDisplay').style.color = "#333";
             document.getElementById('successMsg').classList.remove('show');
             const now = new Date();
-            document.getElementById('status').innerText = dict[currentLang].ready_status + formatClock(now);
+            // Show "No están listas..." initially
+            document.getElementById('status').innerText = dict[currentLang].not_ready + formatClock(now);
         }
 
         function createPuddles(amount) {
@@ -523,6 +594,7 @@
             let hoursPassed = 0;
             const startTime = new Date();
             
+            // Switch to "Listas a las..." as soon as simulation starts
             statusEl.innerText = dict[currentLang].ready_status + formatClock(startTime);
 
             const tickRate = 0.05; 
@@ -535,6 +607,8 @@
                 hoursPassed += hoursPerTick;
 
                 const simulatedDate = new Date(startTime.getTime() + (hoursPassed * 60 * 60 * 1000));
+                
+                // Keep updating prediction time
                 statusEl.innerText = dict[currentLang].ready_status + formatClock(simulatedDate);
 
                 if (currentWater < 0) currentWater = 0;
@@ -611,17 +685,17 @@
         }
 
         // Modal Functions
-        function openModal() {
-            document.getElementById("adModal").style.display = "block";
-        }
-        function closeModal() {
-            document.getElementById("adModal").style.display = "none";
-        }
-        // Close modal if user clicks outside of it
+        function openAdModal() { document.getElementById("adModal").style.display = "block"; }
+        function closeAdModal() { document.getElementById("adModal").style.display = "none"; }
+        function openMathModal() { document.getElementById("mathModal").style.display = "block"; }
+        function closeMathModal() { document.getElementById("mathModal").style.display = "none"; }
+
         window.onclick = function(event) {
-            const modal = document.getElementById("adModal");
-            if (event.target == modal) {
-                modal.style.display = "none";
+            if (event.target == document.getElementById("adModal")) {
+                closeAdModal();
+            }
+            if (event.target == document.getElementById("mathModal")) {
+                closeMathModal();
             }
         }
 
